@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs'); // Importe o bcryptjs para hash de senha
+
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -14,18 +16,18 @@ const userSchema = new Schema({
     required: true,
     minlength: 6
   },
-  confirm_password: {
-    type: String,
-    required: true,
-    validate: {
-      validator: function(value) {
-        return value === this.password;
-      },
-      message: 'As senhas não coincidem'
-    }
-  },
   // Outros campos opcionais, como nome, sobrenome, data de nascimento, etc.
 });
+
+// Adicione o método comparePassword ao schema do usuário
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  try {
+    // Use bcrypt para comparar a senha fornecida com a senha armazenada no banco de dados
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (err) {
+    throw new Error(err);
+  }
+};
 
 const User = mongoose.model('User', userSchema);
 
